@@ -3,7 +3,29 @@ import { userApi } from '@/api/userApi';
 import type { UserFormData } from '@/schemas/userForm.schema';
 import type { User } from '@/types/user.types';
 
-export function useUsers() {
+import { toast } from 'sonner';
+
+export interface UseUsersReturn {
+  users: User[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+  createUser: UseMutateFunction<User, Error, UserFormData, unknown>;
+  isCreating: boolean;
+  updateUser: UseMutateFunction<
+    User,
+    Error,
+    { id: string; data: Partial<UserFormData> },
+    unknown
+  >;
+  isUpdating: boolean;
+  deleteUser: UseMutateFunction<void, Error, string, unknown>;
+  isDeleting: boolean;
+}
+
+import { type UseMutateFunction } from '@tanstack/react-query';
+
+export function useUsers(): UseUsersReturn {
   const queryClient = useQueryClient();
 
   const usersQuery = useQuery<User[]>({
@@ -15,6 +37,10 @@ export function useUsers() {
     mutationFn: userApi.createUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User created successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to create user: ${error.message}`);
     },
   });
 
@@ -23,6 +49,10 @@ export function useUsers() {
       userApi.updateUser(variables.id, variables.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User updated successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to update user: ${error.message}`);
     },
   });
 
@@ -30,6 +60,10 @@ export function useUsers() {
     mutationFn: userApi.deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to delete user: ${error.message}`);
     },
   });
 

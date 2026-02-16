@@ -1,15 +1,13 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { userApi } from '@/api/userApi';
+import { useUsers } from '@/hooks/useUsers';
 import {
   userSchema,
   type UserFormData,
   userFormConfig,
 } from '@/schemas/userForm.schema';
 import { cn } from '@/lib/utils';
-import { CircleCheck, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface UserFormProps {
   onSuccess?: () => void;
@@ -17,8 +15,7 @@ interface UserFormProps {
 }
 
 export function UserForm({ onSuccess, onCancel }: UserFormProps) {
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const queryClient = useQueryClient();
+  const { createUser, isCreating } = useUsers();
 
   const {
     register,
@@ -35,23 +32,13 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
     },
   });
 
-  const createUserMutation = useMutation({
-    mutationFn: userApi.createUser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setSuccessMessage('User created successfully!');
-      reset();
-
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSuccessMessage(null);
-        onSuccess?.();
-      }, 2000);
-    },
-  });
-
   const onSubmit = (data: UserFormData) => {
-    createUserMutation.mutate(data);
+    createUser(data, {
+      onSuccess: () => {
+        reset();
+        onSuccess?.();
+      },
+    });
   };
 
   return (
@@ -62,13 +49,6 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
           Enter user details below to create a new account.
         </p>
       </div>
-
-      {successMessage && (
-        <div className="mb-6 p-4 bg-green-50 text-green-700 border border-green-200 rounded-md flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-          <CircleCheck className="w-5 h-5" />
-          <span className="text-sm font-medium">{successMessage}</span>
-        </div>
-      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {userFormConfig.map((field) => (
@@ -128,7 +108,7 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
         <div className="flex items-center gap-4 pt-4">
           <button
             type="submit"
-            disabled={!isValid || isSubmitting || createUserMutation.isPending}
+            disabled={!isValid || isSubmitting || isCreating}
             className={cn(
               'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full',
               !isValid
@@ -136,7 +116,7 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
                 : 'bg-primary text-primary-foreground hover:bg-primary/90',
             )}
           >
-            {createUserMutation.isPending ? (
+            {isCreating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating...
