@@ -8,7 +8,7 @@ export interface UserFieldConfig {
   type: UserFieldType;
   required: boolean;
   placeholder?: string;
-  options?: { label: string; value: string }[]; // For select inputs
+  options?: { label: string; value: string }[];
 }
 
 export const userSchema = z.object({
@@ -17,7 +17,15 @@ export const userSchema = z.object({
   role: z.enum(['admin', 'user'] as const),
   dateOfBirth: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Date of birth is required.' }),
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Date of birth is required.' })
+    .refine(
+      (date) => {
+        const today = new Date();
+        const dob = new Date(date);
+        return dob <= today;
+      },
+      { message: 'Date of birth cannot be in the future.' },
+    ),
 });
 
 export type UserFormData = z.infer<typeof userSchema>;

@@ -8,14 +8,17 @@ import {
 } from '@/schemas/userForm.schema';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
+import type { User } from '@/types/user.types';
 
 interface UserFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  initialData?: User | null;
 }
 
-export function UserForm({ onSuccess, onCancel }: UserFormProps) {
-  const { createUser, isCreating } = useUsers();
+export function UserForm({ onSuccess, onCancel, initialData }: UserFormProps) {
+  const { createUser, isCreating, updateUser, isUpdating } = useUsers();
 
   const {
     register,
@@ -32,21 +35,50 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
     },
   });
 
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        name: initialData.name,
+        email: initialData.email,
+        dateOfBirth: initialData.dateOfBirth,
+        role: initialData.role,
+      });
+    }
+  }, [initialData, reset]);
+
   const onSubmit = (data: UserFormData) => {
-    createUser(data, {
-      onSuccess: () => {
-        reset();
-        onSuccess?.();
-      },
-    });
+    if (initialData) {
+      updateUser(
+        { id: initialData.id, data },
+        {
+          onSuccess: () => {
+            reset();
+            onSuccess?.();
+          },
+        },
+      );
+    } else {
+      createUser(data, {
+        onSuccess: () => {
+          reset();
+          onSuccess?.();
+        },
+      });
+    }
   };
+
+  const isSaving = isCreating || isUpdating;
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-card rounded-lg border shadow-sm">
       <div className="space-y-2 mb-6">
-        <h3 className="text-2xl font-bold tracking-tight">Create User</h3>
+        <h3 className="text-2xl font-bold tracking-tight">
+          {initialData ? 'Edit User' : 'Create User'}
+        </h3>
         <p className="text-sm text-muted-foreground">
-          Enter user details below to create a new account.
+          {initialData
+            ? 'Update the user details below.'
+            : 'Enter user details below to create a new account.'}
         </p>
       </div>
 
@@ -88,6 +120,11 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
                 id={field.name}
                 type={field.type}
                 placeholder={field.placeholder}
+                max={
+                  field.type === 'date'
+                    ? new Date().toISOString().split('T')[0]
+                    : undefined
+                }
                 {...register(field.name)}
                 className={cn(
                   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
@@ -108,7 +145,7 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
         <div className="flex items-center gap-4 pt-4">
           <button
             type="submit"
-            disabled={!isValid || isSubmitting || isCreating}
+            disabled={!isValid || isSubmitting || isSaving}
             className={cn(
               'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full',
               !isValid
@@ -116,11 +153,13 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
                 : 'bg-primary text-primary-foreground hover:bg-primary/90',
             )}
           >
-            {isCreating ? (
+            {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+                {initialData ? 'Updating...' : 'Creating...'}
               </>
+            ) : initialData ? (
+              'Update User'
             ) : (
               'Create User'
             )}

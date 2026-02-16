@@ -3,6 +3,7 @@ import type { User } from '@/types/user.types';
 import { useState } from 'react';
 import { Loader2, Trash2, Pencil, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { UserForm } from '@/components/UserForm';
 
 export function UsersTable() {
   const { users, isLoading, isError, deleteUser, isDeleting } = useUsers();
@@ -56,26 +57,15 @@ export function UsersTable() {
     <>
       {editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-card border rounded-lg shadow-lg relative">
-            {/* Edit mode overlay could be cleaner but reusing UserForm logic effectively 
-                 would require refactoring UserForm to accept initial data.
-                 For now, displaying placeholder or implement if UserForm supports updates */}
-            <div className="p-6">
-              <h3 className="text-lg font-bold mb-4">Edit User</h3>
-              <p className="text-muted-foreground mb-4">
-                Editing functionality to be implemented in UserForm.
-              </p>
-              <button
-                onClick={() => setEditingUser(null)}
-                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md"
-              >
-                Close
-              </button>
-            </div>
+          <div className="w-full max-w-md bg-card border rounded-lg shadow-lg relative max-h-[90vh] overflow-y-auto">
+            <UserForm
+              initialData={editingUser}
+              onCancel={() => setEditingUser(null)}
+              onSuccess={() => setEditingUser(null)}
+            />
           </div>
         </div>
       )}
-
       <div className="rounded-md border bg-card">
         <div className="relative w-full overflow-auto">
           <table className="w-full caption-bottom text-sm">
