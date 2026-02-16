@@ -17,7 +17,7 @@ This project is a User Management Dashboard that allows administrators to View, 
 - **UI Components**: Custom components inspired by shadcn/ui
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **Notifications**: [Sonner](https://sonner.emilkowal.ski/)
-- **Mock Backend**: [JSON Server](https://github.com/typicode/json-server)
+- **Backend**: Vercel Serverless Functions (in-memory storage)
 - **HTTP Client**: [Axios](https://axios-http.com/)
 
 ## 🏃‍♂️ How to Run Locally
@@ -28,6 +28,7 @@ Follow these steps to get the project up and running on your local machine.
 
 - Node.js (v18 or higher)
 - npm or yarn
+- Vercel CLI (optional, for local API testing)
 
 ### Installation
 
@@ -44,21 +45,27 @@ Follow these steps to get the project up and running on your local machine.
     npm install
     ```
 
-3.  **Start the Mock Backend**:
-    This project uses `json-server` to simulate a REST API. Open a terminal and run:
+3.  **Start the Development Server**:
+
+    **Option A: Using Vercel CLI (Recommended)**
+
+    This will run both the frontend and API routes locally:
 
     ```bash
-    npm run server
+    npx vercel dev
     ```
 
-    The API will be available at `http://localhost:3001`.
+    The application will be accessible at `http://localhost:3000`.
 
-4.  **Start the Frontend Development Server**:
-    In a separate terminal window, run:
+    **Option B: Using Vite only**
+
     ```bash
     npm run dev
     ```
+
     The application will be accessible at `http://localhost:5173`.
+
+    > **Note**: When using Vite only, the API routes won't be available unless you deploy to Vercel or use a local serverless function runner.
 
 ## 🏗 Architecture Explanation
 
@@ -66,6 +73,8 @@ The project follows a modular, feature-based architecture designed for scalabili
 
 ### Key Directories
 
+- **`api/`**: Vercel Serverless API routes.
+  - `users.ts`: Handles all CRUD operations for users using in-memory storage. Supports GET, POST, PUT, and DELETE methods.
 - **`src/api`**: Contains API definition and Axios configuration. `userApi.ts` handles all HTTP requests to the backend.
 - **`src/components`**: Reusable UI components.
   - `UserForm.tsx`: A smart form component that handles both creation and editing of users. It uses `react-hook-form` and `zod` for validation.
@@ -127,7 +136,7 @@ Thanks to the schema-driven architecture, adding a new field (e.g., "PhoneNumber
 
 ## 📝 Assumptions
 
-- **Backend**: The project assumes a RESTful API structure provided by `json-server`.
+- **Backend**: The project uses Vercel Serverless Functions with in-memory storage. Data persists only during the serverless function's lifecycle and will reset on cold starts.
 - **Authentication**: No authentication system is currently implemented (out of scope).
 - **Date Handling**: Dates are stored as ISO strings or `YYYY-MM-DD` strings. Timezones are essentially treated as local for the purpose of the Date of Birth.
-- **Unique Emails**: The backend (json-server) does not inherently enforce unique emails, but a real backend would.
+- **Unique Emails**: The backend does not enforce unique email constraints. In a production environment, this should be implemented.
