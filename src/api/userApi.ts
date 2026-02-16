@@ -18,11 +18,11 @@ export const userApi = {
   },
 
   updateUser: async (id: string, data: Partial<UserFormData>) => {
-    const response = await api.patch<User>(`/users/${id}`, data);
+    const response = await api.put<User>('/users', data, { params: { id } });
     return response.data;
   },
 
   deleteUser: async (id: string) => {
-    await api.delete(`/users/${id}`);
+    await api.delete('/users', { params: { id } });
   },
 };
