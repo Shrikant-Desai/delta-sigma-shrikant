@@ -88,6 +88,9 @@ export function UsersTable() {
                   Email
                 </th>
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  Date of Birth
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                   Role
                 </th>
                 <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
@@ -103,6 +106,7 @@ export function UsersTable() {
                 >
                   <td className="p-4 align-middle font-medium">{user.name}</td>
                   <td className="p-4 align-middle">{user.email}</td>
+                  <td className="p-4 align-middle">{user.dateOfBirth}</td>
                   <td className="p-4 align-middle">
                     <span
                       className={cn(

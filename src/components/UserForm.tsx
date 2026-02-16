@@ -31,6 +31,7 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
     defaultValues: {
       name: '',
       email: '',
+      dateOfBirth: '',
     },
   });
 
